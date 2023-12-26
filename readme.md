@@ -6,6 +6,11 @@ API для прохождения тестов (+ демонстрационны
 
 ## Запуск
 
+Проект настроен на работу с Postgres, для корректной работы можно запустить базу в докере
+```bash
+sudo docker run --name postgres -e POSTGRES_PASSWORD=12345 -d -p 5432:5432 postgres
+```
+
 Склонировать репозиторий
 ```bash
 git clone https://github.com/jingleMyBells/yapoki-http-api.git
