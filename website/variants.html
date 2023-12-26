@@ -11,38 +11,37 @@
     <body>
 
         <script>
-            let url = '/api/variants/'
+            let url = "/api/variants/"
 
             fetch(url, {
                 method: "GET",
             }).then(function (response) {
                 response.json().then(function (json) {
                     json.forEach(element => {
-                        let div = document.createElement('div');
+                        let div = document.createElement("div");
                         div.classList.add("card")
                         div.classList.add("w-50")
-                        let div2 = document.createElement('div');
+                        let div2 = document.createElement("div");
                         div2.classList.add("card-body")
-                        let h5 = document.createElement('h5');
+                        let h5 = document.createElement("h5");
                         h5.classList.add("card-title")
                         h5.textContent = element.name
-                        let p = document.createElement('p');
+                        let p = document.createElement("p");
                         p.classList.add("card-text")
                         p.textContent = element.id
-                        let button = document.createElement('button')
+                        let button = document.createElement("button")
                         button.classList.add("btn")
                         button.classList.add("btn-primary")
                         button.type = "button"
                         button.id = element.id
                         button.textContent = "Buy"
 
-                        button.addEventListener('click', async _ => {
+                        button.addEventListener("click", async _ => {
                             try {   
-                                await fetch('/api/variants/' + element.id, {
-                                method: 'post',
+                                await fetch("/api/variants/" + element.id, {
+                                method: "post",
                                 }).then(function (resp) {
                                     if (resp.ok) {
-                                        console.log("успешно отправили запрос на создание теста")
                                         window.location.replace("/testing/" + element.id)
                                     }
                                 });

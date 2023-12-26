@@ -11,40 +11,40 @@
     <body>
 
         <script>
-            let form = document.createElement('form')
+            let form = document.createElement("form")
 
-            let loginDiv = document.createElement('div')
-            loginDiv.classList.add('mb-3')
-            let loginLabel = document.createElement('label')
-            loginLabel.classList.add('form-label')
-            loginLabel.for = 'loginInput1'
-            loginLabel.textContent = 'Имя пользователя'
-            let loginInput = document.createElement('input')
-            loginInput.classList.add('form-control')
-            loginInput.id = 'loginInput1'
-            loginInput.setAttribute('aria-describedby', 'loginHelp')
+            let loginDiv = document.createElement("div")
+            loginDiv.classList.add("mb-3")
+            let loginLabel = document.createElement("label")
+            loginLabel.classList.add("form-label")
+            loginLabel.for = "loginInput1"
+            loginLabel.textContent = "Имя пользователя"
+            let loginInput = document.createElement("input")
+            loginInput.classList.add("form-control")
+            loginInput.id = "loginInput1"
+            loginInput.setAttribute("aria-describedby", "loginHelp")
             loginInput.required = true
-            let loginHelp = document.createElement('div')
-            loginHelp.id = 'loginHelp'
-            loginHelp.classList.add('form-text')
-            loginHelp.textContent = 'Регистрации в проекте не существует, добавление юзеров только через базу данных'
-            let passDiv = document.createElement('div')
-            passDiv.classList.add('mb-3')
-            let passLabel = document.createElement('label')
-            passLabel.for = 'inputPassword1'
-            passLabel.classList.add('form-label')
-            passLabel.textContent = 'Пароль'
-            let passInput = document.createElement('input')
-            passInput.id = 'inputPassword1'
-            passInput.classList.add('form-control')
-            passInput.type = 'password'
+            let loginHelp = document.createElement("div")
+            loginHelp.id = "loginHelp"
+            loginHelp.classList.add("form-text")
+            loginHelp.textContent = "Регистрации в проекте не существует, добавление юзеров только через базу данных"
+            let passDiv = document.createElement("div")
+            passDiv.classList.add("mb-3")
+            let passLabel = document.createElement("label")
+            passLabel.for = "inputPassword1"
+            passLabel.classList.add("form-label")
+            passLabel.textContent = "Пароль"
+            let passInput = document.createElement("input")
+            passInput.id = "inputPassword1"
+            passInput.classList.add("form-control")
+            passInput.type = "password"
             passInput.required = true
 
-            let button = document.createElement('button')
-            button.type = 'submit'
-            button.classList.add('btn')
-            button.classList.add('btn-primary')
-            button.textContent = 'Войти'
+            let button = document.createElement("button")
+            button.type = "submit"
+            button.classList.add("btn")
+            button.classList.add("btn-primary")
+            button.textContent = "Войти"
 
             loginDiv.append(loginLabel)
             loginDiv.append(loginInput)
@@ -64,24 +64,19 @@
 
             form.addEventListener("submit", function (event) {
                 event.preventDefault();
-
-                console.log(loginInput.value)
-                console.log(passInput.value)
-
-                
+       
                 data = JSON.stringify({
                     "login": loginInput.value,
                     "password": passInput.value
                 });
 
-                fetch('/api/login/', {
-                    method: 'post',
+                fetch("/api/login/", {
+                    method: "post",
                     body: data,
                     headers: {
-                        'Content-Type': 'application/json; charset=utf-8'
+                        "Content-Type": "application/json; charset=utf-8"
                     }
                 }).then(function (resp) {
-                    console.log("Попробуем редиректнуться")
                     window.location.replace("/")
                 });
             });

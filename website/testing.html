@@ -14,10 +14,9 @@
             let currentLocation = window.location.pathname.split("/")
             if (currentLocation.length == 3) {
                 let variantId = currentLocation[2]
-                console.log("Есть только айдишка варианта")
                 try {   
-                    fetch('/api/testing/' + variantId, {
-                        method: 'get',
+                    fetch("/api/testing/" + variantId, {
+                        method: "get",
                     }).then(function (resp) {
                         resp.json().then(function (json) {
                             if (json.length > 0)  {
@@ -29,96 +28,95 @@
                     console.error(`Error: ${err}`);
                 }
             } else {
-                console.log("Есть и вариант и задача")
                 let variantId = currentLocation[2]
                 let problemId = currentLocation[3]
                 try {   
-                    fetch('/api/testing/' + variantId + "/" + problemId, {
-                        method: 'get',
+                    fetch("/api/testing/" + variantId + "/" + problemId, {
+                        method: "get",
                     }).then(function (resp) {
                         resp.json().then(function (json) {
-                            if (json['is_finished']) {
-                                window.location.replace("/testing/result/" + json['test_id']  + "/")
+                            if (json["is_finished"]) {
+                                window.location.replace("/testing/result/" + json["test_id"]  + "/")
                             }
-                            let problem = json['problem']
-                            let div = document.createElement('div');
+                            let problem = json["problem"]
+                            let div = document.createElement("div");
                             div.classList.add("card")
                             div.classList.add("w-50")
-                            let div2 = document.createElement('div');
+                            let div2 = document.createElement("div");
                             div2.classList.add("card-body")
 
-                            let h5 = document.createElement('h5');
+                            let h5 = document.createElement("h5");
                             h5.classList.add("card-title")
-                            h5.textContent = problem['question']
+                            h5.textContent = problem["question"]
 
-                            let button = document.createElement('button')
+                            let button = document.createElement("button")
                             button.classList.add("btn")
                             button.classList.add("btn-primary")
                             button.type = "button"
                             button.textContent = "Buy"
-                            button.type = 'submit'
+                            button.type = "submit"
 
-                            let form = document.createElement('form')
+                            let form = document.createElement("form")
 
-                            let firstCheckDiv = document.createElement('div')
+                            let firstCheckDiv = document.createElement("div")
                             firstCheckDiv.classList.add("form-check")
-                            let firstCheckInput = document.createElement('input')
-                            firstCheckInput.classList.add('form-check-input')
-                            firstCheckInput.type = 'radio'
-                            firstCheckInput.name = 'flexRadioDefault'
-                            firstCheckInput.id = 'flexRadioDefault1'
-                            let firstCheckLabel = document.createElement('label')
-                            firstCheckLabel.classList.add('form-check-label')
-                            firstCheckLabel.for = 'flexRadioDefault1'
-                            firstCheckLabel.textContent = problem['correct_answer']
+                            let firstCheckInput = document.createElement("input")
+                            firstCheckInput.classList.add("form-check-input")
+                            firstCheckInput.type = "radio"
+                            firstCheckInput.name = "flexRadioDefault"
+                            firstCheckInput.id = "flexRadioDefault1"
+                            let firstCheckLabel = document.createElement("label")
+                            firstCheckLabel.classList.add("form-check-label")
+                            firstCheckLabel.for = "flexRadioDefault1"
+                            firstCheckLabel.textContent = problem["correct_answer"]
 
                             firstCheckDiv.append(firstCheckInput)
                             firstCheckDiv.append(firstCheckLabel)
 
 
-                            let secondCheckDiv = document.createElement('div')
+                            let secondCheckDiv = document.createElement("div")
                             secondCheckDiv.classList.add("form-check")
-                            let secondCheckInput = document.createElement('input')
-                            secondCheckInput.classList.add('form-check-input')
-                            secondCheckInput.type = 'radio'
-                            secondCheckInput.name = 'flexRadioDefault'
-                            secondCheckInput.id = 'flexRadioDefault2'
-                            let secondCheckLabel = document.createElement('label')
-                            secondCheckLabel.classList.add('form-check-label')
-                            secondCheckLabel.for = 'flexRadioDefault2'
-                            secondCheckLabel.textContent = problem['answer_1']
+                            let secondCheckInput = document.createElement("input")
+                            secondCheckInput.classList.add("form-check-input")
+                            secondCheckInput.type = "radio"
+                            secondCheckInput.name = "flexRadioDefault"
+                            secondCheckInput.id = "flexRadioDefault2"
+                            let secondCheckLabel = document.createElement("label")
+                            secondCheckLabel.classList.add("form-check-label")
+                            secondCheckLabel.for = "flexRadioDefault2"
+                            secondCheckLabel.textContent = problem["answer_1"]
 
                             secondCheckDiv.append(secondCheckInput)
                             secondCheckDiv.append(secondCheckLabel)
 
 
-                            let thirdCheckDiv = document.createElement('div')
+                            let thirdCheckDiv = document.createElement("div")
                             thirdCheckDiv.classList.add("form-check")
-                            let thirdCheckInput = document.createElement('input')
-                            thirdCheckInput.classList.add('form-check-input')
-                            thirdCheckInput.type = 'radio'
-                            thirdCheckInput.name = 'flexRadioDefault'
-                            thirdCheckInput.id = 'flexRadioDefault3'
-                            let thirdCheckLabel = document.createElement('label')
-                            thirdCheckLabel.classList.add('form-check-label')
-                            thirdCheckLabel.for = 'flexRadioDefault3'
-                            thirdCheckLabel.textContent = problem['answer_2']
+                            let thirdCheckInput = document.createElement("input")
+                            thirdCheckInput.classList.add("form-check-input")
+                            thirdCheckInput.type = "radio"
+                            thirdCheckInput.name = "flexRadioDefault"
+                            thirdCheckInput.id = "flexRadioDefault3"
+                            let thirdCheckLabel = document.createElement("label")
+                            thirdCheckLabel.classList.add("form-check-label")
+                            thirdCheckLabel.for = "flexRadioDefault3"
+                            thirdCheckLabel.textContent = problem["answer_2"]
 
                             thirdCheckDiv.append(thirdCheckInput)
                             thirdCheckDiv.append(thirdCheckLabel)
 
 
-                            let fourthCheckDiv = document.createElement('div')
+                            let fourthCheckDiv = document.createElement("div")
                             fourthCheckDiv.classList.add("form-check")
-                            let fourthCheckInput = document.createElement('input')
-                            fourthCheckInput.classList.add('form-check-input')
-                            fourthCheckInput.type = 'radio'
-                            fourthCheckInput.name = 'flexRadioDefault'
-                            fourthCheckInput.id = 'flexRadioDefault4'
-                            let fourthCheckLabel = document.createElement('label')
-                            fourthCheckLabel.classList.add('form-check-label')
-                            fourthCheckLabel.for = 'flexRadioDefault4'
-                            fourthCheckLabel.textContent = problem['answer_3']
+                            let fourthCheckInput = document.createElement("input")
+                            fourthCheckInput.classList.add("form-check-input")
+                            fourthCheckInput.type = "radio"
+                            fourthCheckInput.name = "flexRadioDefault"
+                            fourthCheckInput.id = "flexRadioDefault4"
+                            let fourthCheckLabel = document.createElement("label")
+                            fourthCheckLabel.classList.add("form-check-label")
+                            fourthCheckLabel.for = "flexRadioDefault4"
+                            fourthCheckLabel.textContent = problem["answer_3"]
 
                             fourthCheckDiv.append(fourthCheckInput)
                             fourthCheckDiv.append(fourthCheckLabel)
@@ -157,23 +155,21 @@
                                 });
 
                                 if (answer != "") {
-                                    fetch('/api/testing/' + variantId + "/" + problemId, {
-                                    method: 'post',
+                                    fetch("/api/testing/" + variantId + "/" + problemId, {
+                                    method: "post",
                                     body: data,
                                     headers: {
-                                        'Content-Type': 'application/json; charset=utf-8'
+                                        "Content-Type": "application/json; charset=utf-8"
                                     }
                                     }).then(function (resp) {
                                         if (resp.ok) {  
-                                            fetch('/api/testing/' + variantId, {
-                                                method: 'get',
+                                            fetch("/api/testing/" + variantId, {
+                                                method: "get",
                                             }).then(function (resp) {
                                                 resp.json().then(function (json) {
-                                                    if (json['is_finished']) {
-                                                        window.location.replace("/testing/result/" + json['test_id']  + "/")
+                                                    if (json["is_finished"]) {
+                                                        window.location.replace("/testing/result/" + json["test_id"]  + "/")
                                                     }
-                                                    console.log("Перезапросили список задач")
-                                                    console.log(json[0])
                                                     if (json.length > 0)  {
                                                         window.location.replace("/testing/" + variantId  + "/" + json[0])
                                                     }

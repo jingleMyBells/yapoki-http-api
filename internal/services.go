@@ -27,7 +27,7 @@ func GetUserByLoginPassword(login string, pass string) (int, string, error) {
 	inputSha1Hash := fmt.Sprintf("%x", sha1.Sum(inputPassword))
 
 	db := GetDB()
-	row := db.Sql.QueryRow(`SELECT id, password, COALESCE(cookie, "") FROM user WHERE login = $1`, login) 
+	row := db.Sql.QueryRow(`SELECT id, password, COALESCE(cookie, '') FROM users WHERE login = $1`, login) 
 	var user_id int
 	var cookie string
 	var dbPassword string
@@ -58,7 +58,7 @@ func CreateUserCookie(user_id int) (string, error) {
 	cookie := string(b)
 
 	db := GetDB()
-	_, err := db.Sql.Exec(`UPDATE user SET cookie = $1 WHERE id = $2`, cookie, user_id) 
+	_, err := db.Sql.Exec(`UPDATE users SET cookie = $1 WHERE id = $2`, cookie, user_id) 
 	if err != nil {
 		log.Printf("Ошибка записи в базу данных: %v", err)
 		return "", err
@@ -68,25 +68,10 @@ func CreateUserCookie(user_id int) (string, error) {
 }
 
 
-// func UserCookieExists(cookie string) (bool, error) {
-// 	db := GetDB()
-
-// 	row := db.Sql.QueryRow("SELECT id FROM user WHERE cookie = $1", cookie) 
-// 	var user_id int
-// 	if err := row.Scan(&user_id); err == sql.ErrNoRows {
-// 		return false, err
-// 	} else if err != nil {
-// 		return false, err
-// 	}
-
-// 	return true, nil
-// }
-
-
 func GetUserIdByCookie(cookie string) (int, error) {
 	db := GetDB()
 
-	row := db.Sql.QueryRow("SELECT id FROM user WHERE cookie = $1", cookie) 
+	row := db.Sql.QueryRow("SELECT id FROM users WHERE cookie = $1", cookie) 
 	var user_id int
 	if err := row.Scan(&user_id); err == sql.ErrNoRows {
 		return 0, err
@@ -107,6 +92,7 @@ func GetAllVariants() []Variant {
 	if err != nil {
 		log.Printf("Ошибка чтения из базы: %v", err)
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var id int
@@ -238,6 +224,7 @@ func CheckTestIsFinished(test_id int) (bool, error) {
 	variant_problems_rows, err := db.Sql.Query(`SELECT COUNT(*) 
 	FROM problem 
 	WHERE variant_id = (SELECT variant_id FROM test WHERE test.id = $1)`, test_id)
+	defer variant_problems_rows.Close()
 	var test_problems_count int
 	if err != nil {
 		return false, err
@@ -274,11 +261,11 @@ func CreateTestResults(test_id int) error {
 	JOIN problem p ON p.id = ta.problem_id
 	WHERE ta.test_id = $1 AND ta.answer = p.correct_answer 
 	`, test_id)
+	defer correct_answers.Close()
 	var correct_answers_count int
 	if err != nil {
 		return err
 	}
-	defer correct_answers.Close()
 	for correct_answers.Next() {
 		correct_answers.Scan(&correct_answers_count)
 	}
@@ -287,11 +274,11 @@ func CreateTestResults(test_id int) error {
 	FROM problem p 
 	WHERE variant_id = (SELECT variant_id FROM test WHERE test.id = $1)
 	`, test_id)
+	defer total_problems.Close()
 	var total_problems_count int
 	if err != nil {
 		return err
 	}
-	defer total_problems.Close()
 	for total_problems.Next() {
 		total_problems.Scan(&total_problems_count)
 	}

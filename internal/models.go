@@ -10,7 +10,6 @@ type Variant struct {
 }
 
 type Problem struct {
-	UserId int `json:"id"`
 	VariantId int `json:"variant_id"`
 	Question string `json:"question"`
 	CorrectAnswer string `json:"correct_answer"`

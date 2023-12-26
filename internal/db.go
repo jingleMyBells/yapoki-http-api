@@ -2,11 +2,10 @@ package internal
 
 import (
 	"database/sql"
-	"crypto/sha1"
-	"fmt"
 	"log"
-	"time"
-	_ "github.com/mattn/go-sqlite3"
+	"fmt"
+
+	_ "github.com/lib/pq"
 )
 
 
@@ -18,7 +17,8 @@ type DB struct {
 	StmtTestAnswer *sql.Stmt
 	StmtTestResult *sql.Stmt
 	StmtMockUser *sql.Stmt
-	Buffer []Test
+	StmtMockVariant *sql.Stmt
+	StmtMockProblem *sql.Stmt
 }
 
 var db *DB
@@ -36,8 +36,14 @@ func GetDB() *DB {
 }
 
 func NewDB(dbFile string) (*DB, error) {
-	sqlDB, err := sql.Open("sqlite3", dbFile)
+	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+	"localhost", 5432, "postgres", "12345", "postgres")
+	sqlDB, err := sql.Open("postgres", connStr)
 	if err != nil {
+		return nil, err
+	}
+
+	if _, err = sqlDB.Exec(schemaUserSQL); err != nil {
 		return nil, err
 	}
 
@@ -61,10 +67,6 @@ func NewDB(dbFile string) (*DB, error) {
 		return nil, err
 	}
 
-	if _, err = sqlDB.Exec(schemaUserSQL); err != nil {
-		return nil, err
-	}
-
 	stmtTest, err := sqlDB.Prepare(insertNewTestSQL)
 	if err != nil {
 		return nil, err
@@ -80,8 +82,18 @@ func NewDB(dbFile string) (*DB, error) {
 		return nil, err
 	}
 
-	// стейтмент для тестового юзера
+	// ниже стейтменты для тестовые данных в бд
 	stmtMockUser, err := sqlDB.Prepare(insertMockUser)
+	if err != nil {
+		return nil, err
+	}
+
+	stmtMockVariant, err := sqlDB.Prepare(insertMockVariant)
+	if err != nil {
+		return nil, err
+	}
+
+	stmtMockProblem, err := sqlDB.Prepare(insertMockProblem)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +104,8 @@ func NewDB(dbFile string) (*DB, error) {
 		StmtTestAnswer: stmtTestAnswer,
 		StmtTestResult: stmtTestResult,
 		StmtMockUser: stmtMockUser,
-		Buffer: make([]Test, 0, 1),
+		StmtMockVariant: stmtMockVariant,
+		StmtMockProblem: stmtMockProblem,
 	}
 
 	return &db, nil
@@ -160,131 +173,17 @@ func (db *DB) AddTestResult(testResult TestResult) error {
 	return nil
 }
 
-func (db *DB) AddTestUser() error {
-
-	inputPassword := []byte("12345")
-	inputSha1Hash := fmt.Sprintf("%x", sha1.Sum(inputPassword))
-
-	user := User{
-		Login: "admin",
-		Password: inputSha1Hash,
-		LoginTime: time.Now(),
-		LogoutTime: time.Now(),
-	}
-
-	tx, err := db.Sql.Begin()
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Stmt(db.StmtMockUser).Exec(
-		user.Login,
-		user.Password,
-		user.LoginTime,
-		user.LogoutTime,
-	)
-	if err != nil {
-		return err
-	}
-
-	tx.Commit()
-
-	return nil
-}
-
 
 func (db *DB) Close() error {
 	defer func() {
 		db.StmtTest.Close()
 		db.StmtTestAnswer.Close()
 		db.StmtTestResult.Close()
+		db.StmtMockUser.Close()
+		db.StmtMockVariant.Close()
+		db.StmtMockProblem.Close()
 		db.Sql.Close()
 	}()
 
 	return nil
 }
-
-
-// func (db *DB) Add(test Test) error {
-// 	if len(db.Buffer) == cap(db.Buffer) {
-// 		return errors.New("tests buffer is full")
-// 	}
-
-// 	db.Buffer = append(db.Buffer, test)
-// 	if len(db.Buffer) == cap(db.Buffer) {
-// 		if err := db.Flush(); err != nil {
-// 			return fmt.Errorf("не получилось слить в базу: %w", err)
-// 		}
-// 	}
-
-// 	return nil
-// }
-
-
-
-// func (db *DB) Flush() error {
-// 	tx, err := db.Sql.Begin()
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	for _, test := range db.Buffer {
-// 		_, err = tx.Stmt(db.Stmt).Exec(test.Time, test.Symbol, test.Price, test.isBuy)
-// 		if err != nil {
-// 			tx.Rollback()
-// 			return err
-// 		}
-// 	}
-
-// 	db.Buffer = db.Buffer[:0]
-// 	return tx.Commit()
-// }
-
-// func (db *DB) Close() error {
-// 	defer func() {
-// 		db.Stmt.Close()
-// 		db.Sql.Close()
-// 	}()
-
-// 	if err := db.Flush(); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
-
-
-
-// func main() {
-// 	fmt.Println("Что-то вообще происходит?")
-
-// 	db, err := NewDB("db.sqlite3")
-// 	if err != nil {
-// 		fmt.Println("Какая-то ошибкаЖ", err)
-// 	}
-
-// 	test := Test{
-// 		Time: time.Now(),
-// 		Symbol: "lalala",
-// 		Price: 3.14,
-// 		isBuy: true,
-// 	}
-
-// 	err = db.Add(test)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	err = db.Add(test)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	err = db.Close()
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-
-// 	fmt.Println("Выход")
-	
-// }

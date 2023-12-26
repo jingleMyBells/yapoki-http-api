@@ -17,9 +17,11 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			log.Printf("Ошибка поиска пользователя в базе по куки: %v", err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
 		}
 		if user_id == 0 {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
 		}
         next.ServeHTTP(w, r)
     })

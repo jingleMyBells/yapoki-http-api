@@ -93,6 +93,7 @@ func VariantsHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		variants := GetAllVariants()
+		w.Header().Set("Content-Type", "application/json; charset: utf-8")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(variants)
 		return
@@ -185,9 +186,8 @@ func TestingHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
+		
 		if len(pathParts) == 4 {
-			// ветвление про то, что мы еще не знаем какие задачи решаем, только вариант
-			// надо провалидировать что это инт
 
 			availableProblems, err := GetTestUnsolvedProblems(lastUserTest)
 			if err != nil {
@@ -218,14 +218,14 @@ func TestingHandler(w http.ResponseWriter, r *http.Request) {
 						IsFinished: testFinished,
 						TestId: lastUserTest,
 					}
+					w.Header().Set("Content-Type", "application/json; charset: utf-8")
 					w.WriteHeader(http.StatusOK)
 					json.NewEncoder(w).Encode(response)
 					return
 				}
 			}
 
-
-
+			w.Header().Set("Content-Type", "application/json; charset: utf-8")
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(availableProblems)
 			return
@@ -281,6 +281,7 @@ func TestingHandler(w http.ResponseWriter, r *http.Request) {
 				AvailableProblems: availableProblems,
 			}
 
+			w.Header().Set("Content-Type", "application/json; charset: utf-8")
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(response)
 			return
@@ -337,6 +338,7 @@ func ResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json; charset: utf-8")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(testResult)
 	return

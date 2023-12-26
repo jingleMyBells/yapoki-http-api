@@ -10,11 +10,12 @@ import (
 
 func main() {
 	log.Printf("Запуск")
-	db := internal.GetDB()
-	err := db.AddTestUser()
+
+	err := internal.AddMockData()
 	if err != nil {
-		log.Printf("Создание юзера не удалось, ошибка: %v", err)
+		log.Printf("Не удалось создать тестовые данные: %v", err)
 	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", internal.AuthMiddleware(internal.RootHandler))
 	mux.HandleFunc("/testing/", internal.TestHTMLHandler)
@@ -27,3 +28,4 @@ func main() {
 
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
+
