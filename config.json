@@ -1,0 +1,13 @@
+{
+    "port": 8080,
+    "db_host": "localhost",
+    "db_port": 5432,
+    "db_user": "postgres",
+    "db_pass": "12345",
+    "db_name": "postgres",
+    "db_conn_schema": "host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+    "cookie_name": "YapokiAuth",
+    "cookie_lenght": 42,
+    "test_username": "admin",
+    "test_userpass": "12345"
+}
