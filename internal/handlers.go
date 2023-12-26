@@ -55,7 +55,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Ошибка записи куки в базу: %v", err)
 			}
 			cookieToInstall := http.Cookie{
-				Name:   "lol",
+				Name:   GetAppConfig().CookieName,
 				Value:  cookie,
 				MaxAge: 86400,
 				SameSite: http.SameSiteNoneMode,
@@ -67,7 +67,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			http.SetCookie(w, &cookieToInstall)
 		} else {
 			cookieToInstall := http.Cookie{
-				Name:   "lol",
+				Name:   GetAppConfig().CookieName,
 				Value:  cookie,
 				MaxAge: 86400,
 				SameSite: http.SameSiteNoneMode,
@@ -83,7 +83,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte("Метод не ок"))
+		w.Write([]byte("Метод не разрешен"))
 		return
 	}
 
@@ -119,7 +119,7 @@ func VariantsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		authCookie, err := r.Cookie("lol")
+		authCookie, err := r.Cookie(GetAppConfig().CookieName)
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
@@ -166,7 +166,7 @@ func TestingHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-	authCookie, err := r.Cookie("lol")
+	authCookie, err := r.Cookie(GetAppConfig().CookieName)
 	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return

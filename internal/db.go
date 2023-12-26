@@ -24,7 +24,13 @@ type DB struct {
 var db *DB
 
 func init() {
-	database, err := NewDB("db.sqlite3")
+	err := NewConfig("../../config.json")
+	
+	if err != nil {
+		log.Printf("Ошибка чтения конфига: %v", err)
+	}
+
+	database, err := NewDB()
 	if err != nil {
 		log.Printf("Ошибка подключения к базе: %v", err)
 	}
@@ -35,9 +41,16 @@ func GetDB() *DB {
 	return db
 }
 
-func NewDB(dbFile string) (*DB, error) {
-	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-	"localhost", 5432, "postgres", "12345", "postgres")
+func NewDB() (*DB, error) {
+	connStr := fmt.Sprintf(
+		GetAppConfig().DBConnSchema,
+		GetAppConfig().DBHost, 
+		GetAppConfig().DBPort, 
+		GetAppConfig().DBUser, 
+		GetAppConfig().DBPass, 
+		GetAppConfig().DBName,
+	)
+
 	sqlDB, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err

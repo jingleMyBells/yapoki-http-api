@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+
 func GetUser(user_id int) error {
 	db := GetDB()
 
@@ -49,8 +50,7 @@ func GetUserByLoginPassword(login string, pass string) (int, string, error) {
 
 func CreateUserCookie(user_id int) (string, error) {
 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	// 42 - ответа на все вопросы во вселенной
-	b := make([]rune, 42)
+	b := make([]rune, GetAppConfig().CookieLength)
     for i := range b {
         b[i] = letters[rand.Intn(len(letters))]
     }

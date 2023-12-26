@@ -8,8 +8,6 @@ import (
 )
 
 
-
-
 func AddMockData() error {
 	db := GetDB()
 
@@ -19,16 +17,15 @@ func AddMockData() error {
 		return err
 	}
 
-	fmt.Println(userCount)
 
 	if userCount == 0 {
-		inputPassword := []byte("12345")
+		inputPassword := []byte(GetAppConfig().TestUserPass)
 		inputSha1Hash := fmt.Sprintf("%x", sha1.Sum(inputPassword))
 
 		fmt.Println(inputSha1Hash)
 
 		user := User{
-			Login: "admin",
+			Login: GetAppConfig().TestUserName,
 			Password: inputSha1Hash,
 			LoginTime: time.Now(),
 			LogoutTime: time.Now(),
