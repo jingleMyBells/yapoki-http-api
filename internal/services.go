@@ -1,21 +1,100 @@
 package internal
 
 import (
+	"crypto/sha1"
 	"database/sql"
 	"fmt"
+	"log"
+	"math/rand"
 	"time"
-
 )
 
 func GetUser(user_id int) error {
 	db := GetDB()
 
-	row := db.Sql.QueryRow("SELECT id, name FROM users WHERE id = $1", user_id) 
+	row := db.Sql.QueryRow("SELECT id, login FROM users WHERE id = $1", user_id) 
 	if err := row.Scan(); err == sql.ErrNoRows {
 		return err
 	}
 
 	return nil
+}
+
+
+func GetUserByLoginPassword(login string, pass string) (int, string, error) {
+
+	inputPassword := []byte(pass)
+	inputSha1Hash := fmt.Sprintf("%x", sha1.Sum(inputPassword))
+
+	db := GetDB()
+	row := db.Sql.QueryRow(`SELECT id, password, COALESCE(cookie, "") FROM user WHERE login = $1`, login) 
+	var user_id int
+	var cookie string
+	var dbPassword string
+	if err := row.Scan(&user_id, &dbPassword, &cookie); err == sql.ErrNoRows {
+		log.Printf("Юзер не найден: %v", err)
+		return 0, "", err
+	} else if err != nil {
+		log.Printf("Ошибка при попытке найти пользователя: %v", err)
+		return 0, "", err
+	}
+
+	if inputSha1Hash == dbPassword {
+		return user_id, cookie, nil
+	}
+
+	return 0, "", fmt.Errorf("Неверный логин или пароль")
+}
+
+
+func CreateUserCookie(user_id int) (string, error) {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+	// 42 - ответа на все вопросы во вселенной
+	b := make([]rune, 42)
+    for i := range b {
+        b[i] = letters[rand.Intn(len(letters))]
+    }
+
+	cookie := string(b)
+
+	db := GetDB()
+	_, err := db.Sql.Exec(`UPDATE user SET cookie = $1 WHERE id = $2`, cookie, user_id) 
+	if err != nil {
+		log.Printf("Ошибка записи в базу данных: %v", err)
+		return "", err
+	}
+
+	return cookie, nil
+}
+
+
+// func UserCookieExists(cookie string) (bool, error) {
+// 	db := GetDB()
+
+// 	row := db.Sql.QueryRow("SELECT id FROM user WHERE cookie = $1", cookie) 
+// 	var user_id int
+// 	if err := row.Scan(&user_id); err == sql.ErrNoRows {
+// 		return false, err
+// 	} else if err != nil {
+// 		return false, err
+// 	}
+
+// 	return true, nil
+// }
+
+
+func GetUserIdByCookie(cookie string) (int, error) {
+	db := GetDB()
+
+	row := db.Sql.QueryRow("SELECT id FROM user WHERE cookie = $1", cookie) 
+	var user_id int
+	if err := row.Scan(&user_id); err == sql.ErrNoRows {
+		return 0, err
+	} else if err != nil {
+		return 0, err
+	}
+
+	return user_id, nil
 }
 
 
@@ -26,7 +105,7 @@ func GetAllVariants() []Variant {
 
 	rows, err := db.Sql.Query("SELECT id, name FROM variant")
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Ошибка чтения из базы: %v", err)
 	}
 
 	for rows.Next() {
@@ -55,7 +134,7 @@ func CreateTest(variant_id int, user_id int) (*Test, error) {
 
 	err := db.AddTest(test)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Ошибка создания тестирования в базе: %v", err)
 		return nil, err
 	}
 
@@ -72,6 +151,7 @@ func GetTLastTestIdByVariantAndUser(variant_id int, user_id int) (int, error) {
 	ORDER BY start_time DESC LIMIT 1`, variant_id, user_id)
 	var test_id int
 	if err := test_row.Scan(&test_id); err == sql.ErrNoRows {
+		log.Printf("Не удалось получить последний тест юзера: %v", err)
 		return 0, err
 	}
 
@@ -82,12 +162,15 @@ func GetTLastTestIdByVariantAndUser(variant_id int, user_id int) (int, error) {
 func GetTestUnsolvedProblems(test_id int) ([]int, error) {
 	db := GetDB()
 
-	rows, err := db.Sql.Query(`SELECT problem.id 
-	FROM problem
-	JOIN test_answer ta ON ta.problem_id != problem.id AND ta.test_id = $1
-	WHERE variant_id = (SELECT user_id, variant_id FROM test WHERE test.id = $1)`, test_id)
+	rows, err := db.Sql.Query(`SELECT id
+	FROM problem p 
+	WHERE variant_id = (SELECT variant_id FROM test WHERE test.id = $1)
+	EXCEPT
+	SELECT problem_id
+	FROM test_answer ta 
+	WHERE ta.test_id = $1;`, test_id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Не удалось получить нерешенные задания: %v", err)
 	}
 	defer rows.Close()
 
@@ -106,14 +189,14 @@ func GetTestUnsolvedProblems(test_id int) ([]int, error) {
 func GetProblemById(problem_id int) (*ProblemOutput, error) {
 	db := GetDB()
 	problem_row := db.Sql.QueryRow(`SELECT question, correct_answer, answer_1, answer_2, answer_3
-	FROM test WHERE id = $1`, problem_id)
+	FROM problem WHERE id = $1`, problem_id)
 	var question string
 	var correctAnswer string
 	var answer1 string
 	var answer2 string
 	var answer3 string
 	if err := problem_row.Scan(&question, &correctAnswer, &answer1, &answer2, &answer3); err == sql.ErrNoRows {
-		return nil, fmt.Errorf("Вопрос не найден")
+		return nil, fmt.Errorf("Задание не найдено")
 	} else if err != nil {
 		return nil, err
 	}
@@ -175,7 +258,7 @@ func CheckTestIsFinished(test_id int) (bool, error) {
 		resolved_test_problems.Scan(&resolved_test_problems_count)
 	}
 
-	if test_problems_count == resolved_test_problems_count {
+	if test_problems_count <= resolved_test_problems_count {
 		return true, nil
 	}
 
@@ -214,7 +297,7 @@ func CreateTestResults(test_id int) error {
 	}
 
 	correct_answers_count *= 100
-	percent := total_problems_count / correct_answers_count
+	percent := correct_answers_count / total_problems_count
 
 	testResult := TestResult{
 		TestId: test_id,

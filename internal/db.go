@@ -2,8 +2,10 @@ package internal
 
 import (
 	"database/sql"
-	// "errors"
+	"crypto/sha1"
 	"fmt"
+	"log"
+	"time"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -15,6 +17,7 @@ type DB struct {
 	StmtTest *sql.Stmt
 	StmtTestAnswer *sql.Stmt
 	StmtTestResult *sql.Stmt
+	StmtMockUser *sql.Stmt
 	Buffer []Test
 }
 
@@ -23,7 +26,7 @@ var db *DB
 func init() {
 	database, err := NewDB("db.sqlite3")
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Ошибка подключения к базе: %v", err)
 	}
 	db = database
 }
@@ -77,11 +80,18 @@ func NewDB(dbFile string) (*DB, error) {
 		return nil, err
 	}
 
+	// стейтмент для тестового юзера
+	stmtMockUser, err := sqlDB.Prepare(insertMockUser)
+	if err != nil {
+		return nil, err
+	}
+
 	db := DB {
 		Sql: sqlDB,
 		StmtTest: stmtTest,
 		StmtTestAnswer: stmtTestAnswer,
 		StmtTestResult: stmtTestResult,
+		StmtMockUser: stmtMockUser,
 		Buffer: make([]Test, 0, 1),
 	}
 
@@ -140,6 +150,38 @@ func (db *DB) AddTestResult(testResult TestResult) error {
 	_, err = tx.Stmt(db.StmtTestResult).Exec(
 		testResult.TestId,
 		testResult.Percent,
+	)
+	if err != nil {
+		return err
+	}
+
+	tx.Commit()
+
+	return nil
+}
+
+func (db *DB) AddTestUser() error {
+
+	inputPassword := []byte("12345")
+	inputSha1Hash := fmt.Sprintf("%x", sha1.Sum(inputPassword))
+
+	user := User{
+		Login: "admin",
+		Password: inputSha1Hash,
+		LoginTime: time.Now(),
+		LogoutTime: time.Now(),
+	}
+
+	tx, err := db.Sql.Begin()
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Stmt(db.StmtMockUser).Exec(
+		user.Login,
+		user.Password,
+		user.LoginTime,
+		user.LogoutTime,
 	)
 	if err != nil {
 		return err

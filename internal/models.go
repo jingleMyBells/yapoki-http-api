@@ -49,4 +49,5 @@ type User struct {
 	Password string `json:"password"`
 	LoginTime time.Time `json:"login_time"`
 	LogoutTime time.Time `json:"logout_time"`
+	Cookie string `json:"cookie"`
 }

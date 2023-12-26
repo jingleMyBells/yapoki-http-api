@@ -1,38 +1,29 @@
 package internal
 
-
-// schemaSQL = `
-// CREATE TABLE IF NOT EXISTS tests (
-// 	time TIMESTAMP,
-// 	symbol VARCHAR(32),
-// 	price FLOAT,
-// 	buy BOOLEAN
-// );
-
 const (
 	schemaVariantSQL = `
 	CREATE TABLE IF NOT EXISTS variant (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name VARCHAR(255)
+		name VARCHAR(255) NOT NULL
 	);
 	`
 	schemaProblemSQL = `
 	CREATE TABLE IF NOT EXISTS problem (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		variant_id INT,
-		question VARCHAR(1000),
-		correct_answer VARCHAR(1000),
-		answer_1 VARCHAR(1000),
-		answer_2 VARCHAR(1000),
-		answer_3 VARCHAR(1000),
+		variant_id INT NOT NULL,
+		question VARCHAR(1000) NOT NULL,
+		correct_answer VARCHAR(1000) NOT NULL,
+		answer_1 VARCHAR(1000) NOT NULL,
+		answer_2 VARCHAR(1000) NOT NULL,
+		answer_3 VARCHAR(1000) NOT NULL,
 		FOREIGN KEY (variant_id)  REFERENCES variant (id)
 	);
 	`
 	schematTestSQL = `
 	CREATE TABLE IF NOT EXISTS test (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		user_id INT,
-		variant_id INT,
+		user_id INT NOT NULL,
+		variant_id INT NOT NULL,
 		start_time TIMESTAMP,
 		FOREIGN KEY (user_id)  REFERENCES user (id),
 		FOREIGN KEY (variant_id)  REFERENCES variant (id)
@@ -42,9 +33,9 @@ const (
 	schematTestAnswersSQL = `
 	CREATE TABLE IF NOT EXISTS test_answer (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		problem_id INT,
-		test_id INT,
-		answer VARCHAR(1000),
+		problem_id INT NOT NULL,
+		test_id INT NOT NULL,
+		answer VARCHAR(1000) NOT NULL,
 		FOREIGN KEY (test_id)  REFERENCES test (id),
 		FOREIGN KEY (problem_id)  REFERENCES problem (id)
 	);
@@ -53,8 +44,8 @@ const (
 	schemaTestResultsSQL = `
 	CREATE TABLE IF NOT EXISTS test_result (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		test_id INT,
-		percent INT,
+		test_id INT NOT NULL,
+		percent INT NOT NULL,
 		FOREIGN KEY (test_id)  REFERENCES test (id)
 	);
 	`
@@ -62,10 +53,11 @@ const (
 	schemaUserSQL = `
 	CREATE TABLE IF NOT EXISTS user (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		login VARCHAR(255),
-		password VARCHAR(255),
+		login VARCHAR(255) NOT NULL UNIQUE,
+		password VARCHAR(255) NOT NULL,
 		login_time TIMESTAMP,
-		logout_time TIMESTAMP
+		logout_time TIMESTAMP,
+		cookie VARCHAR(255) UNIQUE
 	);
 	`
 
@@ -93,6 +85,13 @@ const (
 	)
 	`
 
+	insertMockUser = `
+	INSERT INTO user (
+		login, password, login_time, logout_time
+	) VALUES (
+		?, ?, ?, ?
+	)
+	`
 )
 
 
